@@ -3,11 +3,12 @@ require('dotenv').config()
 const fs = require('fs');
 const path = require('path');
 
-const sequelize = new Sequelize(process.env.DATABASE, process.env.DB_USER, process.env.DB_PASSWORD, {
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
     host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     dialect: 'mysql'
 });
-
+console.log
 const basename = path.basename(__filename);
 const db = {};
 fs.readdirSync(__dirname)
@@ -21,7 +22,7 @@ fs.readdirSync(__dirname)
             Sequelize.DataTypes
         );
         db[model.name] = model;
-        console.log('Found file:', file)
+        // console.log('Found file:', file)
     });
 
 Object.keys(db).forEach((modelName) => {
@@ -29,8 +30,7 @@ Object.keys(db).forEach((modelName) => {
         db[modelName].associate(db);
     }
 });
-console.log('Loaded models:', Object.keys(db));
-console.log('Reading directory:', __dirname);
+// console.log('Loaded models:', Object.keys(db));
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
