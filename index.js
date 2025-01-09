@@ -8,3 +8,11 @@ db.sequelize.sync({ alter: true })
 server.listen(process.env.PORT, () => {
     console.log(`server running on port ${process.env.PORT}`)
 })
+
+
+
+// TODO handle sql injection
+// sanitization
+// cleaner response format
+// otp
+// tests
