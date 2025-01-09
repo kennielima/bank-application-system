@@ -1,7 +1,7 @@
 const server = require('./server')
 
 const db = require('./database/models');
-db.sequelize.sync()
+db.sequelize.sync({ alter: true })
     .then(() => console.log('DATABASE CONNECTED SUCCESSFULLY'))
     .catch(console.error);
 
