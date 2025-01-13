@@ -12,7 +12,7 @@ server.listen(process.env.PORT, () => {
 
 
 // TODO handle sql injection
+// cleaner response format: done
+// otp: DONE
 // sanitization
-// cleaner response format
-// otp
 // tests

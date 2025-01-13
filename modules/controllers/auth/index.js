@@ -17,6 +17,11 @@ router.post('/login',
     authValidator.handleValidationErrors, 
     Authcontroller.login
 )
+router.post('/verify-login', 
+    authValidator.validateOTP(),
+    authValidator.handleValidationErrors, 
+    Authcontroller.OTPlogin
+)
 
 router.post('/logout', 
     Authcontroller.logout

@@ -19,6 +19,11 @@ class authValidator {
             body('Password').notEmpty().withMessage('Password is required'),
         ]
     }
+    static validateOTP() {
+        return [
+            body('otp').isNumeric().notEmpty().withMessage('Please input OTP'),
+        ]
+    }
     static handleValidationErrors(req, res, next) {
         console.log('error Validator starting');
 

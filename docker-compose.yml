@@ -15,7 +15,6 @@ services:
       - db
     volumes:
       - .:/usr/src
-      # - /usr/src/node_modules
     develop:
       watch:
         - action: rebuild
