@@ -272,9 +272,9 @@ class Authcontroller {
                  }
             })
             if (!user) {
-                console.log("User doesn't exist")
+                console.log("Invalid OTP")
                 const response = {
-                    message: "User doesn't exist"
+                    message: "Invalid OTP"
                 }
                 return createResponse(
                     res,
