@@ -27,6 +27,14 @@ router.get('/refresh-token',
     Authcontroller.refreshToken
 )
 
+router.post('/forgot-password',
+    Authcontroller.OTPforgotPassword
+)
+
+router.post('/reset-password',
+    Authcontroller.resetPassword
+)
+
 router.post('/logout',
     Authcontroller.logout
 )

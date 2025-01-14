@@ -6,6 +6,7 @@ const { createResponse, HttpStatusCode, ResponseStatus } = require('../../../uti
 const sendOTP = require('../../../utils/nodemailer-otp');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
+const { generateOTP, generatePassword } = require('../../../utils/helpers');
 
 
 class Authcontroller {
@@ -28,8 +29,8 @@ class Authcontroller {
                     response
                 )
             }
-
-            const hashedPassword = await bcrypt.hash(Password, 10)
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(Password, salt)
             const newUser = await db.User.create({ FirstName, LastName, Email, PhoneNumber, Password: hashedPassword })
             console.log(newUser)
 
@@ -68,9 +69,7 @@ class Authcontroller {
     static async login(req, res) {
         const { Email, Password } = req.body;
         console.log(req.body);
-        const generateOTP = () => {
-            return Math.floor(1000 + Math.random() * 9000);
-        }
+
         try {
             const otp = generateOTP();
             const user = await db.User.findOne({
@@ -162,6 +161,8 @@ class Authcontroller {
                     response
                 )
             }
+            authenticate(user.UserId, res);
+
             await db.User.update({
                 OTP: null,
                 OTPExpiry: null
@@ -170,7 +171,6 @@ class Authcontroller {
                     Email: Email
                 }
             })
-            authenticate(user.UserId, res);
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
             console.log("Device Info", parseDevice, deviceInfo);
@@ -200,6 +200,126 @@ class Authcontroller {
         }
     }
 
+    static async OTPforgotPassword(req, res) {
+        try{
+            const { Email } = req.body;
+            let response = {
+                data: { isOTPSent: false },
+            }
+            const user = await db.User.findOne({
+                where: { Email }
+            })
+            if (!user) {
+                console.log("User doesn't exist")
+                const response = {
+                    message: "User doesn't exist"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const otp = generateOTP();
+            await db.User.update({
+                OTP: otp,
+                OTPExpiry: new Date(Date.now() + 10 * 60 * 1000)
+            }, {
+                where: {
+                    Email: Email
+                }
+            })
+            await sendOTP(otp, Email);
+
+             response = {
+                data: { isOTPSent: true, user },
+                message: "Reset Password OTP has been sent to email"
+            }
+
+            return createResponse(
+                res,
+                HttpStatusCode.StatusCreated,
+                ResponseStatus.Success,
+                response
+            )
+        }
+        catch (error) {
+            console.error('Failed to send reset paset OTP:', error);
+            const response = {
+                message: "Failed to send reset password OTP"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusBadRequest,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+    }
+
+    static async resetPassword(req, res) {
+            const { Email, otp } = req.body;
+            console.log(req.body)
+        try {
+            const user = await db.User.findOne({
+                where: { 
+                    Email,
+                    OTP: otp,
+                    OTPExpiry: {
+                        [Op.gt]: new Date()
+                    }
+                 }
+            })
+            if (!user) {
+                console.log("User doesn't exist")
+                const response = {
+                    message: "User doesn't exist"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const newPassword = generatePassword();
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+            await db.User.update({
+                OTP: null,
+                OTPExpiry: null,
+                Password: hashedPassword
+            }, {
+                where: {
+                    Email: Email
+                }
+            })
+            const response = {
+                data: { newPassword: newPassword },
+                message: "Your password has been reset"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusCreated,
+                ResponseStatus.Success,
+                response
+            )
+        }
+        catch (error) {
+            console.error('Failed to reset password:', error);
+            const response = {
+                message: "Failed to reset password"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusBadRequest,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+    }
     static async refreshToken(req, res) {
         try {
             console.log("req cookies:", req.headers.cookie, req.cookies);
@@ -262,6 +382,7 @@ class Authcontroller {
             )
         }
     }
+
     static logout(req, res) {
         try {
             res.cookie("accesstoken", "", {
