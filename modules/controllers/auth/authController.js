@@ -239,7 +239,7 @@ class Authcontroller {
             )
             console.log(newAccessToken)
             const response = {
-                // data: { accessToken: newAccessToken },
+                data: { accessToken: newAccessToken },
                 message: "Token refreshed successfully"
             }
             return createResponse(

@@ -7,7 +7,10 @@ require('dotenv').config()
 
 const server = express();
 
-server.use(cors())
+server.use(cors({
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}))
 server.use(express.json())
 server.use(express.urlencoded({ extended: true }))
 server.use(cookieParser());
