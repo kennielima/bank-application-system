@@ -5,6 +5,7 @@ const parser = require("ua-parser-js");
 const { createResponse, HttpStatusCode, ResponseStatus } = require('../../../utils/apiResponses');
 const sendOTP = require('../../../utils/nodemailer-otp');
 const { Op } = require('sequelize');
+const jwt = require('jsonwebtoken');
 
 
 class Authcontroller {
@@ -63,6 +64,7 @@ class Authcontroller {
             )
         }
     }
+
     static async login(req, res) {
         const { Email, Password } = req.body;
         console.log(req.body);
@@ -132,10 +134,12 @@ class Authcontroller {
             )
         }
     }
+
+
     static async OTPlogin(req, res) {
         const { Email, otp } = req.body;
         console.log(req.body);
-        try {                        
+        try {
             const user = await db.User.findOne({
                 where: {
                     Email,
@@ -196,10 +200,71 @@ class Authcontroller {
         }
     }
 
+    static async refreshToken(req, res) {
+        try {
+            console.log("req cookies:", req.headers.cookie, req.cookies);
 
+            const refreshToken = req.cookies.refreshtoken;
+            console.log("refreshtoken", refreshToken);
+
+            if (!refreshToken) {
+                const response = {
+                    message: "No refresh token provided"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const decodedRefreshtoken = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET);
+            console.log(decodedRefreshtoken)
+            const user = await db.User.findByPk(decodedRefreshtoken.UserId)
+            if (!user) {
+                const response = {
+                    message: "User doesn't exist"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusNotFound,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const newAccessToken = jwt.sign(
+                { UserId: user.UserId },
+                process.env.ACCESS_JWT_SECRET,
+                { expiresIn: "1h" }
+            )
+            console.log(newAccessToken)
+            const response = {
+                // data: { accessToken: newAccessToken },
+                message: "Token refreshed successfully"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusOk,
+                ResponseStatus.Success,
+                response
+            )
+        }
+        catch (error) {
+            console.error('Refresh token error:', error);
+            const response = {
+                message: "Failed to refresh token"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusBadRequest,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+    }
     static logout(req, res) {
         try {
-            res.cookie("tokenkey", "", {
+            res.cookie("accesstoken", "", {
                 httpOnly: true,
                 sameSite: 'strict',
                 maxAge: 0,
