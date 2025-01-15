@@ -35,9 +35,9 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'AccountId',
             as: 'Sender'
         })
-        Transaction.hasMany(models.Bill, {
+        Transaction.hasOne(models.Bill, {
             foreignKey: 'TransactionId',
-            as: 'Bills'
+            as: 'Bill'
         })
     }
     return Transaction;
