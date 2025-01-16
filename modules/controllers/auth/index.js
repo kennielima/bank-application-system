@@ -4,28 +4,40 @@ const authValidator = require("./authValidator")
 
 const router = require("express").Router()
 
-router.post('/signup', 
+router.post('/signup',
     handleSqlInjection,
-    authValidator.validateSignupForm(), 
-    authValidator.handleValidationErrors, 
+    authValidator.validateSignupForm(),
+    authValidator.handleValidationErrors,
     Authcontroller.signup
 )
 
-router.post('/login', 
+router.post('/login',
     handleSqlInjection,
-    authValidator.validateLoginForm(), 
-    authValidator.handleValidationErrors, 
+    authValidator.validateLoginForm(),
+    authValidator.handleValidationErrors,
     Authcontroller.login
 )
-router.post('/verify-login', 
+router.post('/verify-login',
     handleSqlInjection,
     authValidator.validateOTP(),
-    authValidator.handleValidationErrors, 
+    authValidator.handleValidationErrors,
     Authcontroller.OTPlogin
 )
+router.get('/refresh-token',
+    Authcontroller.refreshToken
+)
 
-router.post('/logout', 
+router.post('/forgot-password',
+    Authcontroller.OTPforgotPassword
+)
+
+router.post('/reset-password',
+    Authcontroller.resetPassword
+)
+
+router.post('/logout',
     Authcontroller.logout
 )
+
 
 module.exports = router;

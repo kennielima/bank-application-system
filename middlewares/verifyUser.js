@@ -3,12 +3,11 @@ const db = require('../../../database/models');
 
 module.exports = async (req, res, next) => {
     try {
-        const authHeader = req.headers["authorization"]
-        const token = authHeader.split(" ")[1]
+        const token = req.cookies.accesstoken;
         if (!token) {
             return res.status(401).json({ message: 'User unauthorized to make request' })
         }
-        const decodedtoken = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedtoken = jwt.verify(token, process.env.ACCESS_JWT_SECRET);
         if (!decodedtoken) {
             return res.status(403).json({ message: 'User unauthorized to make request' })
         }
