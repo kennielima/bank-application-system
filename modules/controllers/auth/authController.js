@@ -137,6 +137,8 @@ class Authcontroller {
 
     static async OTPlogin(req, res) {
         const { Email, otp } = req.body;
+        console.log("req cookies:", req.headers.cookie, req.cookies);
+
         console.log(req.body);
         try {
             const user = await db.User.findOne({
@@ -200,8 +202,8 @@ class Authcontroller {
         }
     }
 
-    static async OTPforgotPassword(req, res) {
-        try{
+    static async forgotPassword(req, res) {
+        try {
             const { Email } = req.body;
             let response = {
                 data: { isOTPSent: false },
@@ -232,7 +234,7 @@ class Authcontroller {
             })
             await sendOTP(otp, Email);
 
-             response = {
+            response = {
                 data: { isOTPSent: true, user },
                 message: "Reset Password OTP has been sent to email"
             }
@@ -258,22 +260,25 @@ class Authcontroller {
         }
     }
 
-    static async resetPassword(req, res) {
-            const { Email, otp } = req.body;
-            console.log(req.body)
+    static async enterPasswordOTP(req, res) {
+        const { Email, otp } = req.body;
+        console.log(req.body);
         try {
+            let response = {
+                data: { isPasswordOTPEntered: false },
+            }
             const user = await db.User.findOne({
-                where: { 
+                where: {
                     Email,
                     OTP: otp,
                     OTPExpiry: {
                         [Op.gt]: new Date()
                     }
-                 }
+                }
             })
             if (!user) {
                 console.log("Invalid OTP")
-                const response = {
+                response = {
                     message: "Invalid OTP"
                 }
                 return createResponse(
@@ -283,7 +288,52 @@ class Authcontroller {
                     response
                 )
             }
-            const newPassword = generatePassword();
+            response = {
+                data: { isPasswordOTPEntered: true },
+                message: "You can now reset your password"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusOk,
+                ResponseStatus.Success,
+                response
+            )
+        }
+        catch (error) {
+            console.error('Failed to enter OTP:', error);
+            const response = {
+                message: "Failed to enter OTP"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusBadRequest,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+    }
+
+    static async resetPassword(req, res) {
+        const { Email, otp, newPassword } = req.body;
+        try {
+            const user = await db.User.findOne({
+                where: {
+                    Email,
+                    OTP: otp
+                }
+            });
+            if (!user) {
+                console.log("Can't verify OTP or email")
+                response = {
+                    message: "Can't verify OTP or email"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(newPassword, salt)
 
@@ -297,9 +347,10 @@ class Authcontroller {
                 }
             })
             const response = {
-                data: { newPassword: newPassword },
+                data: { newPassword: hashedPassword },
                 message: "Your password has been reset"
             }
+
             return createResponse(
                 res,
                 HttpStatusCode.StatusCreated,
@@ -320,6 +371,7 @@ class Authcontroller {
             )
         }
     }
+
     static async refreshToken(req, res) {
         try {
             console.log("req cookies:", req.headers.cookie, req.cookies);

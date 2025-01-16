@@ -28,10 +28,19 @@ router.get('/refresh-token',
 )
 
 router.post('/forgot-password',
-    Authcontroller.OTPforgotPassword
+    Authcontroller.forgotPassword
 )
 
+router.post('/verify-otp',
+    handleSqlInjection,
+    authValidator.validateOTP(),
+    authValidator.handleValidationErrors,
+    Authcontroller.enterPasswordOTP
+)
 router.post('/reset-password',
+    handleSqlInjection,
+    authValidator.validateNewPassword(),
+    authValidator.handleValidationErrors,
     Authcontroller.resetPassword
 )
 
@@ -41,3 +50,9 @@ router.post('/logout',
 
 
 module.exports = router;
+
+// TODO:SINGLE DEVICE LOGIN 2
+// TODO:users can renew their password themselves 1
+// TODO: LOGGER 4
+// SERVICES 3
+// BLOCK AND UNBLOCK USER 5
