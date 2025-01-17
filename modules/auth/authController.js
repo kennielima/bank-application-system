@@ -1,12 +1,13 @@
-const db = require('../../../database/models');
-const authenticate = require('../../../middlewares/authenticate');
+const db = require('../../database/models');
+const { authenticate, deauthenticate } = require('../../middlewares/authenticate');
 const bcrypt = require("bcryptjs");
 const parser = require("ua-parser-js");
-const { createResponse, HttpStatusCode, ResponseStatus } = require('../../../utils/apiResponses');
-const sendOTP = require('../../../utils/nodemailer-otp');
-const { Op } = require('sequelize');
+const { createResponse, HttpStatusCode, ResponseStatus } = require('../../utils/apiResponses');
+const sendOTP = require('../../utils/nodemailer-otp');
 const jwt = require('jsonwebtoken');
-const { generateOTP, generatePassword } = require('../../../utils/helpers');
+const { generateOTP, generatePassword } = require('../../utils/helpers');
+const AuthServices = require('./authService');
+const verifyUser = require('../../middlewares/verifyUser');
 
 
 class Authcontroller {
@@ -14,9 +15,7 @@ class Authcontroller {
         const { FirstName, LastName, Email, PhoneNumber, Password } = req.body;
         console.log(req.body)
         try {
-            const existingUser = await db.User.findOne({
-                where: { Email }
-            })
+            const existingUser = await AuthServices.findExistingUser(Email)
             if (existingUser) {
                 console.log('user already exists')
                 const response = {
@@ -31,7 +30,7 @@ class Authcontroller {
             }
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(Password, salt)
-            const newUser = await db.User.create({ FirstName, LastName, Email, PhoneNumber, Password: hashedPassword })
+            const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword)
             console.log(newUser)
 
             authenticate(newUser.UserId, res)
@@ -55,7 +54,7 @@ class Authcontroller {
         catch (error) {
             console.error('Signup error:', error);
             const response = {
-                message: "Failed to authenticate"
+                message: "Failed to authenticate:" + error
             }
             return createResponse(
                 res,
@@ -71,10 +70,8 @@ class Authcontroller {
         console.log(req.body);
 
         try {
-            const otp = generateOTP();
-            const user = await db.User.findOne({
-                where: { Email }
-            })
+            const OTP = generateOTP();
+            const user = await AuthServices.findExistingUser(Email)
             if (!user) {
                 console.log("User doesn't exist")
                 const response = {
@@ -99,15 +96,9 @@ class Authcontroller {
                     response
                 )
             }
-            await db.User.update({
-                OTP: otp,
-                OTPExpiry: new Date(Date.now() + 10 * 60 * 1000)
-            }, {
-                where: {
-                    Email: Email
-                }
-            })
-            await sendOTP(otp, Email);
+            const OTPExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            await AuthServices.updateUserDetailswithOTP(OTP, OTPExpiry, Email);
+            await sendOTP(OTP, Email);
 
             const response = {
                 data: user,
@@ -123,7 +114,7 @@ class Authcontroller {
         catch (error) {
             console.error('Login error:', error);
             const response = {
-                message: "Failed to initiate login"
+                message: "Failed to initiate login:" + error
             }
             return createResponse(
                 res,
@@ -134,23 +125,11 @@ class Authcontroller {
         }
     }
 
-
     static async OTPlogin(req, res) {
-        const { Email, otp } = req.body;
-        console.log("req cookies:", req.headers.cookie, req.cookies);
-
+        const { Email, OTP } = req.body;
         console.log(req.body);
         try {
-            const user = await db.User.findOne({
-                where: {
-                    Email,
-                    OTP: otp,
-                    OTPExpiry: {
-                        [Op.gt]: new Date()
-                    }
-                }
-            })
-            console.log(user)
+            const user = await AuthServices.findUserWithOTP(OTP, Email)
             if (!user) {
                 console.log("Invalid OTP")
                 const response = {
@@ -165,14 +144,8 @@ class Authcontroller {
             }
             authenticate(user.UserId, res);
 
-            await db.User.update({
-                OTP: null,
-                OTPExpiry: null
-            }, {
-                where: {
-                    Email: Email
-                }
-            })
+            await AuthServices.updateUserDetailswithOTP(null, null, Email);
+
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
             console.log("Device Info", parseDevice, deviceInfo);
@@ -191,7 +164,7 @@ class Authcontroller {
         catch (error) {
             console.error('OTP error:', error);
             const response = {
-                message: "Failed to verify OTP"
+                message: "Failed to verify OTP:" + error
             }
             return createResponse(
                 res,
@@ -208,9 +181,7 @@ class Authcontroller {
             let response = {
                 data: { isOTPSent: false },
             }
-            const user = await db.User.findOne({
-                where: { Email }
-            })
+            const user = await AuthServices.findExistingUser(Email);
             if (!user) {
                 console.log("User doesn't exist")
                 const response = {
@@ -223,19 +194,13 @@ class Authcontroller {
                     response
                 )
             }
-            const otp = generateOTP();
-            await db.User.update({
-                OTP: otp,
-                OTPExpiry: new Date(Date.now() + 10 * 60 * 1000)
-            }, {
-                where: {
-                    Email: Email
-                }
-            })
-            await sendOTP(otp, Email);
+            const OTP = generateOTP();
+            const OTPExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            await AuthServices.updateUserDetailswithOTP(OTP, OTPExpiry, Email);
+            await sendOTP(OTP, Email);
 
             response = {
-                data: { isOTPSent: true, user },
+                data: { isOTPSent: true },
                 message: "Reset Password OTP has been sent to email"
             }
 
@@ -249,7 +214,7 @@ class Authcontroller {
         catch (error) {
             console.error('Failed to send reset paset OTP:', error);
             const response = {
-                message: "Failed to send reset password OTP"
+                message: "Failed to send reset password OTP:" + error
             }
             return createResponse(
                 res,
@@ -261,21 +226,13 @@ class Authcontroller {
     }
 
     static async enterPasswordOTP(req, res) {
-        const { Email, otp } = req.body;
+        const { Email, OTP } = req.body;
         console.log(req.body);
         try {
             let response = {
                 data: { isPasswordOTPEntered: false },
             }
-            const user = await db.User.findOne({
-                where: {
-                    Email,
-                    OTP: otp,
-                    OTPExpiry: {
-                        [Op.gt]: new Date()
-                    }
-                }
-            })
+            const user = await AuthServices.findUserWithOTP(OTP, Email)
             if (!user) {
                 console.log("Invalid OTP")
                 response = {
@@ -302,7 +259,7 @@ class Authcontroller {
         catch (error) {
             console.error('Failed to enter OTP:', error);
             const response = {
-                message: "Failed to enter OTP"
+                message: "Failed to enter OTP:" + error
             }
             return createResponse(
                 res,
@@ -314,14 +271,9 @@ class Authcontroller {
     }
 
     static async resetPassword(req, res) {
-        const { Email, otp, newPassword } = req.body;
+        const { Email, OTP, newPassword } = req.body;
         try {
-            const user = await db.User.findOne({
-                where: {
-                    Email,
-                    OTP: otp
-                }
-            });
+            const user = await AuthServices.findExistingUser(Email, OTP);
             if (!user) {
                 console.log("Can't verify OTP or email")
                 response = {
@@ -337,15 +289,7 @@ class Authcontroller {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(newPassword, salt)
 
-            await db.User.update({
-                OTP: null,
-                OTPExpiry: null,
-                Password: hashedPassword
-            }, {
-                where: {
-                    Email: Email
-                }
-            })
+            await AuthServices.updateUserPassword(Email, hashedPassword);
             const response = {
                 data: { newPassword: hashedPassword },
                 message: "Your password has been reset"
@@ -361,7 +305,7 @@ class Authcontroller {
         catch (error) {
             console.error('Failed to reset password:', error);
             const response = {
-                message: "Failed to reset password"
+                message: "Failed to reset password:" + error
             }
             return createResponse(
                 res,
@@ -375,12 +319,13 @@ class Authcontroller {
     static async refreshToken(req, res) {
         try {
             console.log("req cookies:", req.headers.cookie, req.cookies);
-
+            let response = {
+                data: { isAccessTokenSent: false },
+            }
             const refreshToken = req.cookies.refreshtoken;
-            console.log("refreshtoken", refreshToken);
 
             if (!refreshToken) {
-                const response = {
+                response = {
                     message: "No refresh token provided"
                 }
                 return createResponse(
@@ -390,28 +335,13 @@ class Authcontroller {
                     response
                 )
             }
-            const decodedRefreshtoken = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET);
-            console.log(decodedRefreshtoken)
-            const user = await db.User.findByPk(decodedRefreshtoken.UserId)
-            if (!user) {
-                const response = {
-                    message: "User doesn't exist"
-                }
-                return createResponse(
-                    res,
-                    HttpStatusCode.StatusNotFound,
-                    ResponseStatus.Failure,
-                    response
-                )
-            }
-            const newAccessToken = jwt.sign(
-                { UserId: user.UserId },
-                process.env.ACCESS_JWT_SECRET,
-                { expiresIn: "1h" }
-            )
-            console.log(newAccessToken)
-            const response = {
-                data: { accessToken: newAccessToken },
+
+            const user = verifyUser(req, res);
+            if (!user) return;
+            authenticate(user.UserId, res);
+
+            response = {
+                data: { isAccessTokenSent: true },
                 message: "Token refreshed successfully"
             }
             return createResponse(
@@ -424,7 +354,7 @@ class Authcontroller {
         catch (error) {
             console.error('Refresh token error:', error);
             const response = {
-                message: "Failed to refresh token"
+                message: "Failed to refresh token:" + error
             }
             return createResponse(
                 res,
@@ -437,11 +367,7 @@ class Authcontroller {
 
     static logout(req, res) {
         try {
-            res.cookie("accesstoken", "", {
-                httpOnly: true,
-                sameSite: 'strict',
-                maxAge: 0,
-            })
+            deauthenticate(res)
             const response = {
                 data: null,
                 message: "User successfully signed out"
@@ -456,7 +382,7 @@ class Authcontroller {
         catch (error) {
             console.error('Signout error:', error);
             const response = {
-                message: "Failed to log out"
+                message: "Failed to log out:" + error
             }
             return createResponse(
                 res,

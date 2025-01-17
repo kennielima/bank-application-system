@@ -21,7 +21,7 @@ class authValidator {
     }
     static validateOTP() {
         return [
-            body('otp').isNumeric().notEmpty().withMessage('Please input OTP'),
+            body('OTP').isNumeric().notEmpty().withMessage('Please input OTP'),
         ]
     }
     static validateNewPassword() {

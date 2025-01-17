@@ -1,4 +1,4 @@
-const handleSqlInjection = require("../../../middlewares/handleSqlInjection")
+const handleSqlInjection = require("../../middlewares/handleSqlInjection")
 const Authcontroller = require("./authController")
 const authValidator = require("./authValidator")
 
@@ -17,12 +17,14 @@ router.post('/login',
     authValidator.handleValidationErrors,
     Authcontroller.login
 )
+
 router.post('/verify-login',
     handleSqlInjection,
     authValidator.validateOTP(),
     authValidator.handleValidationErrors,
     Authcontroller.OTPlogin
 )
+
 router.get('/refresh-token',
     Authcontroller.refreshToken
 )
@@ -51,8 +53,9 @@ router.post('/logout',
 
 module.exports = router;
 
-// TODO:SINGLE DEVICE LOGIN 2
-// TODO:users can renew their password themselves 1
-// TODO: LOGGER 4
-// SERVICES 3
-// BLOCK AND UNBLOCK USER 5
+// TODO:users can renew their password themselves 1 
+// SERVICES 2
+// TODO: LOGGER 3
+// add accesstoken column to model 4
+// TODO:SINGLE DEVICE LOGIN 5
+// BLOCK AND UNBLOCK USER 6
