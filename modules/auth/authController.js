@@ -4,20 +4,22 @@ const bcrypt = require("bcryptjs");
 const parser = require("ua-parser-js");
 const { createResponse, HttpStatusCode, ResponseStatus } = require('../../utils/apiResponses');
 const sendOTP = require('../../utils/nodemailer-otp');
-const jwt = require('jsonwebtoken');
-const { generateOTP, generatePassword } = require('../../utils/helpers');
+const { generateOTP } = require('../../utils/helpers');
 const AuthServices = require('./authService');
 const verifyUser = require('../../middlewares/verifyUser');
+const logger = require('../../utils/logger');
+const sanitizer = require("sanitizer");
 
 
 class Authcontroller {
     static async signup(req, res) {
         const { FirstName, LastName, Email, PhoneNumber, Password } = req.body;
-        console.log(req.body)
+        logger.info(sanitizer.sanitize('Signup request:', req.body));
         try {
             const existingUser = await AuthServices.findExistingUser(Email)
             if (existingUser) {
-                console.log('user already exists')
+                logger.warn('User does not exist');
+
                 const response = {
                     message: "User already exists, login instead"
                 }
@@ -31,7 +33,7 @@ class Authcontroller {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(Password, salt)
             const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword)
-            console.log(newUser)
+            logger.info(sanitizer.sanitize(newUser));
 
             authenticate(newUser.UserId, res)
 
@@ -52,7 +54,7 @@ class Authcontroller {
         }
 
         catch (error) {
-            console.error('Signup error:', error);
+            logger.error('Signup error:', error);
             const response = {
                 message: "Failed to authenticate:" + error
             }
@@ -67,13 +69,13 @@ class Authcontroller {
 
     static async login(req, res) {
         const { Email, Password } = req.body;
-        console.log(req.body);
+        logger.info(sanitizer.sanitize('Login request:', req.body));
 
         try {
             const OTP = generateOTP();
             const user = await AuthServices.findExistingUser(Email)
             if (!user) {
-                console.log("User doesn't exist")
+                logger.warn('User does not exist');
                 const response = {
                     message: "User doesn't exist"
                 }
@@ -112,7 +114,7 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('Login error:', error);
+            logger.error('Login error:', error);
             const response = {
                 message: "Failed to initiate login:" + error
             }
@@ -127,11 +129,11 @@ class Authcontroller {
 
     static async OTPlogin(req, res) {
         const { Email, OTP } = req.body;
-        console.log(req.body);
+        logger.info(sanitizer.sanitize('OTP Login request:', req.body));
         try {
             const user = await AuthServices.findUserWithOTP(OTP, Email)
             if (!user) {
-                console.log("Invalid OTP")
+                logger.warn('Invalid OTP');
                 const response = {
                     message: "Invalid OTP"
                 }
@@ -148,8 +150,8 @@ class Authcontroller {
 
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
-            console.log("Device Info", parseDevice, deviceInfo);
-
+            // console.log("Device Info", parseDevice, deviceInfo);
+            logger.info(sanitizer.sanitize("Device Info", parseDevice, deviceInfo));
             const response = {
                 data: user,
                 message: "User successfully logged in"
@@ -162,7 +164,8 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('OTP error:', error);
+            logger.error('OTP error:', error);
+
             const response = {
                 message: "Failed to verify OTP:" + error
             }
@@ -183,7 +186,7 @@ class Authcontroller {
             }
             const user = await AuthServices.findExistingUser(Email);
             if (!user) {
-                console.log("User doesn't exist")
+                logger.warn('User does not exist');
                 const response = {
                     message: "User doesn't exist"
                 }
@@ -212,7 +215,7 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('Failed to send reset paset OTP:', error);
+            logger.error('Failed to send reset paset OTP:', error);
             const response = {
                 message: "Failed to send reset password OTP:" + error
             }
@@ -227,7 +230,7 @@ class Authcontroller {
 
     static async enterPasswordOTP(req, res) {
         const { Email, OTP } = req.body;
-        console.log(req.body);
+        logger.info(sanitizer.sanitize('Enter OTP request:', req.body));
         try {
             let response = {
                 data: { isPasswordOTPEntered: false },
@@ -257,7 +260,7 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('Failed to enter OTP:', error);
+            logger.error('Failed to enter OTP:', error);
             const response = {
                 message: "Failed to enter OTP:" + error
             }
@@ -275,7 +278,7 @@ class Authcontroller {
         try {
             const user = await AuthServices.findExistingUser(Email, OTP);
             if (!user) {
-                console.log("Can't verify OTP or email")
+                logger.warn("Can't verify OTP or email")
                 response = {
                     message: "Can't verify OTP or email"
                 }
@@ -303,7 +306,7 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('Failed to reset password:', error);
+            logger.error('Failed to reset password:', error);
             const response = {
                 message: "Failed to reset password:" + error
             }
@@ -318,7 +321,7 @@ class Authcontroller {
 
     static async refreshToken(req, res) {
         try {
-            console.log("req cookies:", req.headers.cookie, req.cookies);
+            logger.info(sanitizer.sanitize("req cookies:", req.headers.cookie, req.cookies));
             let response = {
                 data: { isAccessTokenSent: false },
             }
@@ -352,7 +355,7 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('Refresh token error:', error);
+            logger.error('Refresh token error:', error);
             const response = {
                 message: "Failed to refresh token:" + error
             }
@@ -365,7 +368,7 @@ class Authcontroller {
         }
     }
 
-    static logout(req, res) {
+    static logout(res) {
         try {
             deauthenticate(res)
             const response = {
@@ -380,7 +383,7 @@ class Authcontroller {
             )
         }
         catch (error) {
-            console.error('Signout error:', error);
+            logger.error('Signout error:', error);
             const response = {
                 message: "Failed to log out:" + error
             }
