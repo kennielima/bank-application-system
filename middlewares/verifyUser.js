@@ -20,24 +20,6 @@ module.exports = async (req, res, next) => {
                     response
                 )
             }
-        // let token = req.cookies.accesstoken;
-        // let JWTSECRET = process.env.ACCESS_JWT_SECRET;
-
-        // if (!token) {
-        //     let token = req.cookies.refreshtoken;
-        //     JWTSECRET = process.env.REFRESH_JWT_SECRET;
-        //     if (!token) {
-        //         const response = {
-        //             message: "User unauthorized to make request"
-        //         }
-        //         return createResponse(
-        //             res,
-        //             HttpStatusCode.StatusUnauthorized,
-        //             ResponseStatus.Failure,
-        //             response
-        //         )
-        //     }
-        // }
         const decodedtoken = jwt.verify(token, JWTSECRET);
         if (!decodedtoken) {
             const response = {
@@ -51,7 +33,7 @@ module.exports = async (req, res, next) => {
             )
         }
         const user = await AuthServices.findUserByPk(decodedtoken.UserId);
-        if (!user || user.accesstoken !== token) {
+        if (!user || (user && user.AccessToken !== token)) {
             const response = {
                 message: "Failed to authenticate user"
             }

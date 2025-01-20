@@ -1,5 +1,6 @@
 const nodemailer = require ("nodemailer");
 const { createResponse, HttpStatusCode, ResponseStatus } = require("./apiResponses");
+const logger = require('../utils/logger');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -19,7 +20,7 @@ const sendOTP = async (otp, email) => {
         });
 
     } catch (error) {
-        console.error('Failed to send otp:', error);
+        logger.error('Failed to send otp:', error);
     
         const response = {
             message: "Failed to send otp"

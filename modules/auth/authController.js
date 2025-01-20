@@ -74,7 +74,6 @@ class Authcontroller {
         try {
             const OTP = generateOTP();
             const user = await AuthServices.findExistingUser(Email)
-            console.log(user)
             if (!user) {
                 logger.warn('User does not exist');
                 const response = {
@@ -147,22 +146,9 @@ class Authcontroller {
                     response
                 )
             }
-            if (!user.accessToken) {
-                logger.warn("You can't login on multiple devices");
-                const response = {
-                    message: "You can't login on multiple devices"
-                }
-                return createResponse(
-                    res,
-                    HttpStatusCode.StatusUnauthorized,
-                    ResponseStatus.Failure,
-                    response
-                )
-            }
-            const accessToken = authenticate(user.UserId, res);
 
-            console.log(accessToken);
-            user.accessToken = accessToken;
+            const AccessToken = authenticate(user.UserId, res);
+            user.AccessToken = AccessToken;
 
             await AuthServices.updateUserDetailswithOTP(null, null, Email);
 
@@ -259,7 +245,7 @@ class Authcontroller {
             }
             const user = await AuthServices.findUserWithOTP(OTP, Email)
             if (!user) {
-                console.log("Invalid OTP")
+                logger.warn("Invalid OTP")
                 response = {
                     message: "Invalid OTP"
                 }
