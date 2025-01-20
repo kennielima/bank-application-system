@@ -51,9 +51,9 @@ module.exports = async (req, res, next) => {
             )
         }
         const user = await AuthServices.findUserByPk(decodedtoken.UserId);
-        if (!user) {
+        if (!user || user.accesstoken !== token) {
             const response = {
-                message: "User doesn't exist"
+                message: "Failed to authenticate user"
             }
             return createResponse(
                 res,
@@ -62,7 +62,18 @@ module.exports = async (req, res, next) => {
                 response
             )
         }
-        // req.user = user;
+        if (user.isBlocked) {
+            const response = {
+                message: "User is blocked"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusUnauthorized,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+        req.user = user;
         const response = {
             message: "User authorized to refresh token"
         }

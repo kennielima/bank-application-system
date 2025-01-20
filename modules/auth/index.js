@@ -45,6 +45,18 @@ router.post('/reset-password',
     authValidator.handleValidationErrors,
     Authcontroller.resetPassword
 )
+router.post('/block-account',
+    handleSqlInjection,
+    authValidator.validateLoginForm(),
+    authValidator.handleValidationErrors,
+    Authcontroller.resetPassword
+)
+router.post('/unblock-account',
+    handleSqlInjection,
+    authValidator.validateLoginForm(),
+    authValidator.handleValidationErrors,
+    Authcontroller.resetPassword
+)
 
 router.post('/logout',
     Authcontroller.logout

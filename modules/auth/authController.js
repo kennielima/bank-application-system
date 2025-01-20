@@ -33,13 +33,13 @@ class Authcontroller {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(Password, salt)
             const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword)
-            logger.info(sanitizer.sanitize(newUser));
 
-            authenticate(newUser.UserId, res)
+            authenticate(newUser.UserId, res);
+            logger.info(sanitizer.sanitize(newUser));
 
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
-            console.log("Device Info", parseDevice, deviceInfo);
+            logger.info("Device Info", parseDevice, deviceInfo);
 
             const response = {
                 data: newUser,
@@ -74,6 +74,7 @@ class Authcontroller {
         try {
             const OTP = generateOTP();
             const user = await AuthServices.findExistingUser(Email)
+            console.log(user)
             if (!user) {
                 logger.warn('User does not exist');
                 const response = {
@@ -132,6 +133,8 @@ class Authcontroller {
         logger.info(sanitizer.sanitize('OTP Login request:', req.body));
         try {
             const user = await AuthServices.findUserWithOTP(OTP, Email)
+            let hasAccessToken = false;
+
             if (!user) {
                 logger.warn('Invalid OTP');
                 const response = {
@@ -144,16 +147,35 @@ class Authcontroller {
                     response
                 )
             }
-            authenticate(user.UserId, res);
+            if (!user.accessToken) {
+                logger.warn("You can't login on multiple devices");
+                const response = {
+                    message: "You can't login on multiple devices"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const accessToken = authenticate(user.UserId, res);
+
+            console.log(accessToken);
+            user.accessToken = accessToken;
 
             await AuthServices.updateUserDetailswithOTP(null, null, Email);
 
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
-            // console.log("Device Info", parseDevice, deviceInfo);
             logger.info(sanitizer.sanitize("Device Info", parseDevice, deviceInfo));
+            hasAccessToken = true;
+
             const response = {
-                data: user,
+                data: {
+                    user,
+                    hasAccessToken
+                },
                 message: "User successfully logged in"
             }
             return createResponse(
@@ -386,6 +408,116 @@ class Authcontroller {
             logger.error('Signout error:', error);
             const response = {
                 message: "Failed to log out:" + error
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusBadRequest,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+    }
+
+    static async blockUser (req, res) {
+        try {
+            const { Email, Password } = req.body;
+            const user = await AuthServices.findExistingUser(Email);
+            if (!user) {
+                logger.warn('User does not exist');
+                const response = {
+                    message: "User doesn't exist"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const validatePassword = bcrypt.compare(Password, user.Password);
+            if (!validatePassword) {
+                const response = {
+                    message: "Invalid Password"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusNotFound,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            user.isBlocked = true;
+            await AuthServices.blockUser(Email);
+            const response = {
+                data: user,
+                message: "User successfully blocked"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusOk,
+                ResponseStatus.Success,
+                response
+            )
+        }
+        catch (error) {
+            logger.error('Failed to block user:', error);
+            const response = {
+                message: "Failed to block user:" + error
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusBadRequest,
+                ResponseStatus.Failure,
+                response
+            )
+        }
+    }
+    static async unblockUser (req, res) {
+        try {
+            const { Email, Password } = req.body;
+
+            const user = await AuthServices.findExistingUser(Email);
+            if (!user) {
+                logger.warn('User does not exist');
+                const response = {
+                    message: "User doesn't exist"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const validatePassword = bcrypt.compare(Password, user.Password);
+            if (!validatePassword) {
+                const response = {
+                    message: "Invalid Password"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusNotFound,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            user.isBlocked = false;
+            await AuthServices.blockUser(Email);
+            const response = {
+                data: user,
+                message: "User successfully unblocked"
+            }
+            return createResponse(
+                res,
+                HttpStatusCode.StatusOk,
+                ResponseStatus.Success,
+                response
+            )
+        }
+        catch (error) {
+            logger.error('Failed to block user:', error);
+            const response = {
+                message: "Failed to block user:" + error
             }
             return createResponse(
                 res,

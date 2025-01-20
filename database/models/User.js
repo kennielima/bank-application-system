@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         Email: {
             type: DataTypes.STRING(255),
             allowNull: false,
-            unique: true
+            // unique: true
         },
         PhoneNumber: {
             type: DataTypes.STRING(15),
@@ -34,6 +34,15 @@ module.exports = (sequelize, DataTypes) => {
         OTPExpiry: {
             type: DataTypes.DATE,
         },
+        AccessToken: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
+        isBlocked: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+        }
     },
     {
         timestamps: true,
