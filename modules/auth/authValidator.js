@@ -1,4 +1,5 @@
 const { body, validationResult } = require("express-validator");
+const logger = require('../../utils/logger');
 
 class authValidator {
     static validateSignupForm() {
@@ -21,17 +22,24 @@ class authValidator {
     }
     static validateOTP() {
         return [
-            body('otp').isNumeric().notEmpty().withMessage('Please input OTP'),
+            body('OTP').isNumeric().notEmpty().withMessage('Please input OTP'),
         ]
     }
+    static validateNewPassword() {
+        return [
+            body('newPassword').isStrongPassword({
+                minLength: 8,
+                minNumbers: 1,
+            }).withMessage('Enter your new Password'),]
+    }
     static handleValidationErrors(req, res, next) {
-        console.log('error Validator starting');
+        logger.error('error Validator starting');
 
         const errors = validationResult(req);
         if (errors.isEmpty()) {
-            return next(); 
+            return next();
         }
-        console.log('failed to validate:', errors);
+        logger.error('failed to validate:', errors);
         return res.status(400).json({ errors: errors.array() });
     }
 }

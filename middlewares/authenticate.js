@@ -4,26 +4,43 @@ const authenticate = (UserId, response) => {
     const accessToken = jwt.sign(
         { UserId },
         process.env.ACCESS_JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "10m" }
     )
     const refreshToken = jwt.sign(
         { UserId },
         process.env.REFRESH_JWT_SECRET,
-        { expiresIn: "1d" }
+        { expiresIn: "1h" }
     )
     response.cookie("accesstoken", accessToken, {
         httpOnly: true,
         sameSite: "strict",
-        maxAge: 3 * 24 * 60 * 60 * 1000,
+        maxAge: 10 * 60 * 1000,
         secure: process.env.NODE_ENV === "production"
     })
     response.cookie("refreshtoken", refreshToken, {
         httpOnly: true,
         sameSite: "strict",
-        maxAge: 1 * 24 * 60 * 60 * 1000,
+        maxAge: 60 * 60 * 1000,
         secure: process.env.NODE_ENV === "production"
     })
     return { accessToken, refreshToken };
 }
 
-module.exports = authenticate;
+const deauthenticate = (response) => {
+    response.cookie("accesstoken", "", {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 0,
+    })
+    response.cookie("refreshtoken", "", {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 0,
+    })
+    // response.clearCookie("accesstoken")
+}
+
+module.exports = {
+    authenticate,
+    deauthenticate
+};
