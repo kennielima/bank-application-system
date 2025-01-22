@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         ServiceNumber: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(50),
         },
         TransactionId: {
             type: DataTypes.UUID,

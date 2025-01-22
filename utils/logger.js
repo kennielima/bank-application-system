@@ -1,5 +1,5 @@
 const winston = require('winston');
-const { combine, json, timestamp, errors } = winston.format;
+const { combine, json, timestamp, errors, colorize, simple } = winston.format;
 const fs = require("fs");
 
 
@@ -36,11 +36,18 @@ const getFile = (type) => {
 const logger = winston.createLogger({
     level: 'info',
     format: combine(
+        colorize(),
+        simple(),
         timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         errors({ stack: true }),
         json()),
     transports: [
-        new winston.transports.Console(),
+        new winston.transports.Console({
+            format: combine(
+                colorize(),
+                simple(),
+            )
+        }),
         new winston.transports.File({
             filename: getFile("error"),
             level: 'error'

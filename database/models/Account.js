@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         AccessToken: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.JSON,
             allowNull: true,
         },
         UserId: {

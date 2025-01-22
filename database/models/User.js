@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         Email: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(50),
             allowNull: false,
             unique: true
         },
@@ -25,11 +25,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         Password: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING,
             allowNull: false,
         },
         OTP: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(50),
         },
         OTPExpiry: {
             type: DataTypes.DATE,
@@ -55,6 +55,12 @@ module.exports = (sequelize, DataTypes) => {
     },
         {
             timestamps: true,
+            indexes: [
+                {
+                    name: "name-search",
+                    fields: [ 'FirstName', 'LastName' ]
+                }
+            ]
         }
     )
 
