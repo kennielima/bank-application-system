@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Bill = sequelize.define(
         'Bill', {
-        BillId: {
+        Id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false,
@@ -29,7 +29,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         ServiceNumber: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
+        },
+        TransactionId: {
+            type: DataTypes.UUID,
         }
     },
     {
@@ -39,7 +42,8 @@ module.exports = (sequelize, DataTypes) => {
     Bill.associate = (models) => {
         Bill.belongsTo(models.Transaction, {
             foreignKey: 'TransactionId',
-            as: 'Transaction'
+            as: 'Transaction',
+            targetKey: 'Id'
         })
     }
     return Bill;

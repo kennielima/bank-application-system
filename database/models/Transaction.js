@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Transaction = sequelize.define(
         'Transaction', {
-        TransactionId: {
+        Id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false,
@@ -24,7 +24,11 @@ module.exports = (sequelize, DataTypes) => {
         Amount: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false,
-        }
+        },
+        AccountId: {
+            type: DataTypes.UUID,
+            allowNull: false,
+        },
     },
     {
         timestamps: true,
@@ -33,11 +37,13 @@ module.exports = (sequelize, DataTypes) => {
     Transaction.associate = (models) => {
         Transaction.belongsTo(models.Account, {
             foreignKey: 'AccountId',
-            as: 'Sender'
+            as: 'Sender',
+            targetKey: 'Id'
         })
         Transaction.hasOne(models.Bill, {
             foreignKey: 'TransactionId',
-            as: 'Bill'
+            as: 'Bill',
+            sourceKey: 'Id'
         })
     }
     return Transaction;

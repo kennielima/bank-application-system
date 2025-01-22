@@ -14,7 +14,28 @@ class AuthServices {
             LastName,
             Email,
             PhoneNumber,
-            Password
+            Password,
+        })
+    }
+    static async saveTokenWithDeviceInfo(AccessToken, deviceInfo, Email) {        
+        return await db.User.update({
+            AccessToken,
+            deviceInfo,
+            hasAccessToken: true
+        }, {
+            where: {
+                Email
+            }
+        })
+    }
+    static async saveToken(AccessToken, Id) {        
+        return await db.User.update({
+            AccessToken,
+            hasAccessToken: true
+        }, {
+            where: {
+                Id
+            }
         })
     }
 
@@ -41,17 +62,6 @@ class AuthServices {
         })
     }
 
-    // static async clearUserOTP(Email) {
-    //     return await db.User.update({
-    //         OTP: null,
-    //         OTPExpiry: null
-    //     }, {
-    //         where: {
-    //             Email
-    //         }
-    //     })
-    // }
-
     static async updateUserPassword(Email, hashedPassword) {
         return await db.User.update({
             OTP: null,
@@ -64,8 +74,30 @@ class AuthServices {
         })
     }
 
-    static async findUserByPk(UserId) {
-        return await db.User.findByPk(UserId)
+    static async findUserByPk(Id) {
+        return await db.User.findByPk(Id)
     }
+
+    static async blockUser(Email) {
+        return await db.User.update({
+            isBlocked: true
+        }, {
+            where: {
+                Email: Email
+            }
+        })
+    }
+
+    static async unblockUser(Email) {
+        return await db.User.update({
+            isBlocked: false
+        }, {
+            where: {
+                Email: Email
+            }
+        })
+    }
+
+
 }
 module.exports = AuthServices;

@@ -1,7 +1,7 @@
 const handleSqlInjection = require("../../middlewares/handleSqlInjection")
 const Authcontroller = require("./authController")
 const authValidator = require("./authValidator")
-
+const verifyUser = require('../../middlewares/verifyUser')
 const router = require("express").Router()
 
 router.post('/signup',
@@ -41,21 +41,23 @@ router.post('/verify-otp',
 )
 router.post('/reset-password',
     handleSqlInjection,
+    verifyUser,
     authValidator.validateNewPassword(),
     authValidator.handleValidationErrors,
     Authcontroller.resetPassword
 )
 router.post('/block-account',
     handleSqlInjection,
+    verifyUser,
     authValidator.validateLoginForm(),
     authValidator.handleValidationErrors,
-    Authcontroller.resetPassword
+    Authcontroller.blockUser
 )
 router.post('/unblock-account',
     handleSqlInjection,
     authValidator.validateLoginForm(),
     authValidator.handleValidationErrors,
-    Authcontroller.resetPassword
+    Authcontroller.unblockUser
 )
 
 router.post('/logout',
@@ -65,9 +67,5 @@ router.post('/logout',
 
 module.exports = router;
 
-// TODO:users can renew their password themselves 1 
-// SERVICES 2
-// TODO: LOGGER 3
-// add accesstoken column to model 4
-// TODO:SINGLE DEVICE LOGIN 5
-// BLOCK AND UNBLOCK USER 6
+// TODO ADD FLAGS TO MODEL
+// TODO ASSOCIATIONS REFACTOR

@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Card = sequelize.define(
         'Card', {
-        CardId: {
+        Id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false,
@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         CardNumber: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(50),
             allowNull: false,
             unique: true,
         },
@@ -28,16 +28,21 @@ module.exports = (sequelize, DataTypes) => {
         ExpiryDate: {
             type: DataTypes.DATE,
             allowNull: false,
+        },
+        AccountId: {
+            type: DataTypes.UUID,
+            allowNull: false
         }
     },
-    {
-        timestamps: true,
-    }
+        {
+            timestamps: true,
+        }
     )
     Card.associate = (models) => {
         Card.belongsTo(models.Account, {
             foreignKey: 'AccountId',
-            as: 'Account'
+            as: 'Account',
+            targetKey: 'Id'
         })
     }
     return Card;
