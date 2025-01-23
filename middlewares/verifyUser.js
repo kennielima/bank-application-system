@@ -9,19 +9,7 @@ module.exports = async (req, res, next) => {
             ? process.env.ACCESS_JWT_SECRET
             : process.env.REFRESH_JWT_SECRET;
 
-            if (!token) {
-                const response = {
-                    message: "User unauthorized to make request"
-                }
-                return createResponse(
-                    res,
-                    HttpStatusCode.StatusUnauthorized,
-                    ResponseStatus.Failure,
-                    response
-                )
-            }
-        const decodedtoken = jwt.verify(token, JWTSECRET);
-        if (!decodedtoken) {
+        if (!token) {
             const response = {
                 message: "User unauthorized to make request"
             }
@@ -32,8 +20,24 @@ module.exports = async (req, res, next) => {
                 response
             )
         }
-        const user = await AuthServices.findUserByPk(decodedtoken.UserId);
-        if (!user || (user && user.AccessToken !== token)) {
+        const decodedtoken = jwt.verify(token, JWTSECRET);
+
+        if (!decodedtoken) {
+            const response = {
+                message: "User unauthorized to make request"
+            }
+
+            return createResponse(
+                res,
+                HttpStatusCode.StatusUnauthorized,
+                ResponseStatus.Failure,
+                response
+            )
+        }  
+        const user = await AuthServices.findUserByPk(decodedtoken.Id);
+
+        const userToken = user.AccessToken.accessToken || user.AccessToken.refreshToken
+        if (!user || (userToken !== token)) {
             const response = {
                 message: "Failed to authenticate user"
             }
@@ -56,15 +60,6 @@ module.exports = async (req, res, next) => {
             )
         }
         req.user = user;
-        const response = {
-            message: "User authorized to refresh token"
-        }
-        createResponse(
-            res,
-            HttpStatusCode.StatusOk,
-            ResponseStatus.Success,
-            response
-        )
         next();
     }
     catch (error) {
@@ -78,5 +73,4 @@ module.exports = async (req, res, next) => {
             response
         )
     }
-    return verifyUser;
 }

@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Beneficiary = sequelize.define(
         'Beneficiary', {
-        BeneficiaryId: {
+        Id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false,
@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         AccountNumber: {
             type: DataTypes.STRING(50),
             allowNull: false,
+        },
+        AccountId: {
+            type: DataTypes.UUID,
+            allowNull: false
         }
     },
     {
@@ -27,7 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     Beneficiary.associate = (models) => {
         Beneficiary.belongsTo(models.Account, {
             foreignKey: 'AccountId',
-            as: 'Account'
+            as: 'Account',
+            targetKey: 'Id'
         })
     }
     return Beneficiary;

@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const User = sequelize.define(
         'User', {
-        UserId: {
+        Id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             allowNull: false,
@@ -16,44 +16,61 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         Email: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(50),
             allowNull: false,
-            // unique: true
+            unique: true
         },
         PhoneNumber: {
             type: DataTypes.STRING(15),
             allowNull: false,
         },
         Password: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING,
             allowNull: false,
         },
         OTP: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(50),
         },
         OTPExpiry: {
             type: DataTypes.DATE,
         },
         AccessToken: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.JSON,
             allowNull: true,
+        },
+        Device: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        hasAccessToken: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
         },
         isBlocked: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
             allowNull: false,
-        }
+        },
     },
-    {
-        timestamps: true,
-    }
+        {
+            timestamps: true,
+            indexes: [
+                {
+                    name: "name-search",
+                    fields: [ 'FirstName', 'LastName' ]
+                }
+            ]
+        }
     )
+
     User.associate = (models) => {
         User.hasMany(models.Account, {
-            foreignKey: 'AccountId',
+            foreignKey: 'UserId', //user ID IN acc MODEL
             as: 'Accounts',
-            OnDelete: 'CASCADE',
-            OnUpdate: 'CASCADE',
+            sourceKey: 'Id',// userid IN user
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
         })
     }
     return User;

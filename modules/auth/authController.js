@@ -6,10 +6,9 @@ const { createResponse, HttpStatusCode, ResponseStatus } = require('../../utils/
 const sendOTP = require('../../utils/nodemailer-otp');
 const { generateOTP } = require('../../utils/helpers');
 const AuthServices = require('./authService');
-const verifyUser = require('../../middlewares/verifyUser');
 const logger = require('../../utils/logger');
 const sanitizer = require("sanitizer");
-
+const jwt = require('jsonwebtoken');
 
 class Authcontroller {
     static async signup(req, res) {
@@ -32,14 +31,14 @@ class Authcontroller {
             }
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(Password, salt)
-            const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword)
-
-            authenticate(newUser.UserId, res);
-            logger.info(sanitizer.sanitize(newUser));
-
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
             logger.info("Device Info", parseDevice, deviceInfo);
+            const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword)
+
+            const AccessToken = authenticate(newUser.Id, res);
+            await AuthServices.saveTokenWithDeviceInfo(AccessToken, deviceInfo, Email)
+            logger.info(sanitizer.sanitize(newUser));
 
             const response = {
                 data: newUser,
@@ -78,6 +77,18 @@ class Authcontroller {
                 logger.warn('User does not exist');
                 const response = {
                     message: "User doesn't exist"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            if (user.isBlocked) {
+                logger.warn('Your account is disabled');
+                const response = {
+                    message: "Your account is disabled"
                 }
                 return createResponse(
                     res,
@@ -130,10 +141,9 @@ class Authcontroller {
     static async OTPlogin(req, res) {
         const { Email, OTP } = req.body;
         logger.info(sanitizer.sanitize('OTP Login request:', req.body));
+
         try {
             const user = await AuthServices.findUserWithOTP(OTP, Email)
-            let hasAccessToken = false;
-
             if (!user) {
                 logger.warn('Invalid OTP');
                 const response = {
@@ -147,23 +157,20 @@ class Authcontroller {
                 )
             }
 
-            const AccessToken = authenticate(user.UserId, res);
-            user.AccessToken = AccessToken;
-
-            await AuthServices.updateUserDetailswithOTP(null, null, Email);
-
+            const AccessToken = authenticate(user.Id, res);
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
+
             logger.info(sanitizer.sanitize("Device Info", parseDevice, deviceInfo));
-            hasAccessToken = true;
+            await AuthServices.updateUserDetailswithOTP(null, null, Email);
+
+            await AuthServices.saveTokenWithDeviceInfo(AccessToken, deviceInfo, Email)
 
             const response = {
-                data: {
-                    user,
-                    hasAccessToken
-                },
+                data: { user },
                 message: "User successfully logged in"
             }
+
             return createResponse(
                 res,
                 HttpStatusCode.StatusCreated,
@@ -284,10 +291,10 @@ class Authcontroller {
     static async resetPassword(req, res) {
         const { Email, OTP, newPassword } = req.body;
         try {
-            const user = await AuthServices.findExistingUser(Email, OTP);
+            const user = await AuthServices.findUserWithOTP(OTP, Email);
             if (!user) {
                 logger.warn("Can't verify OTP or email")
-                response = {
+                const response = {
                     message: "Can't verify OTP or email"
                 }
                 return createResponse(
@@ -333,9 +340,12 @@ class Authcontroller {
             let response = {
                 data: { isAccessTokenSent: false },
             }
-            const refreshToken = req.cookies.refreshtoken;
+            const token = req.cookies.refreshtoken || req.cookies.accesstoken;
+            const JWTSECRET = token === req.cookies.accesstoken
+            ? process.env.ACCESS_JWT_SECRET
+            : process.env.REFRESH_JWT_SECRET;
 
-            if (!refreshToken) {
+            if (!token) {
                 response = {
                     message: "No refresh token provided"
                 }
@@ -346,13 +356,37 @@ class Authcontroller {
                     response
                 )
             }
+            const decodedtoken = jwt.verify(token, JWTSECRET);
+            if (!decodedtoken) {
+                const response = {
+                    message: "User unauthorized to make request"
+                }
+    
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusUnauthorized,
+                    ResponseStatus.Failure,
+                    response
+                )
+            }
+            const user = await AuthServices.findUserByPk(decodedtoken.Id);
+            
+            if (!user) {
+                const response = {
+                    message: "Failed to authenticate user"
+                }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusNotFound,
+                    ResponseStatus.Failure,
+                    response
+                )
+            };
 
-            const user = verifyUser(req, res);
-            if (!user) return;
-            authenticate(user.UserId, res);
-
+            const AccessToken = authenticate(user.Id, res);
+            await AuthServices.saveToken(AccessToken, user.Id);
             response = {
-                data: { isAccessTokenSent: true },
+                data: { isAccessTokenSent: true, AccessToken: AccessToken },
                 message: "Token refreshed successfully"
             }
             return createResponse(
@@ -404,7 +438,7 @@ class Authcontroller {
         }
     }
 
-    static async blockUser (req, res) {
+    static async blockUser(req, res) {
         try {
             const { Email, Password } = req.body;
             const user = await AuthServices.findExistingUser(Email);
@@ -432,7 +466,6 @@ class Authcontroller {
                     response
                 )
             }
-            user.isBlocked = true;
             await AuthServices.blockUser(Email);
             const response = {
                 data: user,
@@ -458,7 +491,7 @@ class Authcontroller {
             )
         }
     }
-    static async unblockUser (req, res) {
+    static async unblockUser(req, res) {
         try {
             const { Email, Password } = req.body;
 
@@ -487,8 +520,7 @@ class Authcontroller {
                     response
                 )
             }
-            user.isBlocked = false;
-            await AuthServices.blockUser(Email);
+            await AuthServices.unblockUser(Email);
             const response = {
                 data: user,
                 message: "User successfully unblocked"
