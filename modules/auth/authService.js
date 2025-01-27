@@ -8,13 +8,14 @@ class AuthServices {
         })
     }
 
-    static async createUser(FirstName, LastName, Email, PhoneNumber, Password) {
+    static async createUser(FirstName, LastName, Email, PhoneNumber, Password, DateOfBirth) {
         return await db.User.create({
             FirstName,
             LastName,
             Email,
             PhoneNumber,
             Password,
+            DateOfBirth
         })
     }
     static async saveTokenWithDeviceInfo(AccessToken, deviceInfo, Email) {        
