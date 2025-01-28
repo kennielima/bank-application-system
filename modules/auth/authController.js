@@ -12,7 +12,7 @@ const jwt = require('jsonwebtoken');
 
 class Authcontroller {
     static async signup(req, res) {
-        const { FirstName, LastName, Email, PhoneNumber, Password } = req.body;
+        const { FirstName, LastName, Email, PhoneNumber, Password, DateOfBirth } = req.body;
         logger.info(sanitizer.sanitize('Signup request:', req.body));
         try {
             const existingUser = await AuthServices.findExistingUser(Email)
@@ -34,7 +34,7 @@ class Authcontroller {
             const parseDevice = parser(req.headers["user-agent"]);
             const deviceInfo = JSON.stringify(parseDevice);
             logger.info("Device Info", parseDevice, deviceInfo);
-            const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword)
+            const newUser = await AuthServices.createUser(FirstName, LastName, Email, PhoneNumber, hashedPassword, DateOfBirth)
 
             const AccessToken = authenticate(newUser.Id, res);
             await AuthServices.saveTokenWithDeviceInfo(AccessToken, deviceInfo, Email)
