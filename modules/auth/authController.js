@@ -340,49 +340,8 @@ class Authcontroller {
             let response = {
                 data: { isAccessTokenSent: false },
             }
-            const token = req.cookies.refreshtoken || req.cookies.accesstoken;
-            const JWTSECRET = token === req.cookies.accesstoken
-            ? process.env.ACCESS_JWT_SECRET
-            : process.env.REFRESH_JWT_SECRET;
-
-            if (!token) {
-                response = {
-                    message: "No refresh token provided"
-                }
-                return createResponse(
-                    res,
-                    HttpStatusCode.StatusUnauthorized,
-                    ResponseStatus.Failure,
-                    response
-                )
-            }
-            const decodedtoken = jwt.verify(token, JWTSECRET);
-            if (!decodedtoken) {
-                const response = {
-                    message: "User unauthorized to make request"
-                }
-    
-                return createResponse(
-                    res,
-                    HttpStatusCode.StatusUnauthorized,
-                    ResponseStatus.Failure,
-                    response
-                )
-            }
-            const user = await AuthServices.findUserByPk(decodedtoken.Id);
+            const user = req.user;
             
-            if (!user) {
-                const response = {
-                    message: "Failed to authenticate user"
-                }
-                return createResponse(
-                    res,
-                    HttpStatusCode.StatusNotFound,
-                    ResponseStatus.Failure,
-                    response
-                )
-            };
-
             const AccessToken = authenticate(user.Id, res);
             await AuthServices.saveToken(AccessToken, user.Id);
             response = {

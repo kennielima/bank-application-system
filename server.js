@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const AuthRouter = require("./modules/auth");
+const kycRouter = require("./modules/kyc");
 require('dotenv').config()
 
 
@@ -16,4 +17,6 @@ server.use(express.urlencoded({ extended: true }))
 server.use(cookieParser());
 
 server.use('/auth', AuthRouter)
+server.use('/kyc', kycRouter)
+
 module.exports = server;
