@@ -2,22 +2,23 @@ const { createResponse, HttpStatusCode, ResponseStatus } = require('../../utils/
 const logger = require('../../utils/logger');
 const smileIdentityCore = require("smile-identity-core");
 const Signature = smileIdentityCore.Signature;
-require('dotenv').config();
 const axios = require('axios');
 const AuthServices = require('../auth/authService');
+const { SMILE_ID_PARTNER_ID, SMILE_ID_API_KEY, SMILE_ID_URL } = require('../../utils/config');
+require('dotenv').config();
 
 class KYCController {
     static async kyc(req, res) {
         const { country, id_type, id_number, first_name, last_name, dateOfBirth, gender, phone_number } = req.body;
         const user = req.user;
-        const connection = new Signature(process.env.SMILE_ID_PARTNER_ID, process.env.SMILE_ID_API_KEY);
+        const connection = new Signature(SMILE_ID_PARTNER_ID, SMILE_ID_API_KEY);
         const date = new Date();
         const generated_signature = connection.generate_signature(date.toISOString());
 
         const dataBody = {
             "source_sdk": "rest_api",
             "source_sdk_version": "2.0.0",
-            "partner_id": process.env.SMILE_ID_PARTNER_ID,
+            "partner_id": SMILE_ID_PARTNER_ID,
             "timestamp": date.toISOString(),
             "signature": generated_signature.signature,
             "country": country,
@@ -35,22 +36,22 @@ class KYCController {
             }
         };
 
-        axios.post(`${process.env.SMILE_ID_URL}`, dataBody, {
+        axios.post(`${SMILE_ID_URL}`, dataBody, {
             headers: {
                 'Content-Type': 'application/json',
             },
         })
             .then((response) => {
                 if(!response.data.success){
-                    const response = { message: "KYC Failed" }
+                    const responseInfo = { message: "KYC Failed" }
                     return createResponse(
                         res,
                         HttpStatusCode.StatusOk,
                         ResponseStatus.Success,
-                        response
+                        responseInfo
                     ) 
                 }
-                let response = { 
+                let responseInfo = { 
                     data: response.data,
                     message: "KYC Success"
                 }
@@ -59,7 +60,7 @@ class KYCController {
                     res,
                     HttpStatusCode.StatusOk,
                     ResponseStatus.Success,
-                    response
+                    responseInfo
                 )
             })
             .catch((error) => {

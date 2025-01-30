@@ -1,19 +1,20 @@
 const nodemailer = require ("nodemailer");
 const { createResponse, HttpStatusCode, ResponseStatus } = require("./apiResponses");
 const logger = require('../utils/logger');
+const { SMTP_USER, SMTP_PASS } = require("./config");
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: SMTP_USER,
+        pass: SMTP_PASS,
     },
 });
 
 const sendOTP = async (otp, email) => {
     try {
         await transporter.sendMail({
-            from: process.env.SMTP_USER,
+            from: SMTP_USER,
             to: email,
             subject: "Bank OTP",
             text: "Hello, your OTP is " + otp,
