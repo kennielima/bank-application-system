@@ -102,7 +102,7 @@ class KYCController {
     };
 
     static async callback(req, res) {
-        const { data } = req.body
+        const { data } = req.body;
         try {
             const user = await AuthServices.findUserByPk(data.PartnerParams.user_id);
             if (!user) {
@@ -118,7 +118,11 @@ class KYCController {
                 )
             }
 
+            const KYCUser = await KYCService.findUserByUserId(user.Id);
+
             if (data.ResultCode !== ("1020" || "1021")) {
+                await KYCService.deleteKYCUser(KYCUser.Id);
+                
                 const response = {
                     message: "KYC Verification failed"
                 }
@@ -131,6 +135,7 @@ class KYCController {
             }
             user.isVerified = true;
             await user.save();
+            await KYCService.verifyUser(KYCUser.Id);
 
             const response = {
                 data: data,

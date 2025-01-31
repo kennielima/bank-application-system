@@ -12,7 +12,25 @@ class KYCService {
             Gender: gender,
             IdType: id_type,
             IdNumber: id_number,
-            IsVerified: true
+        })
+    }
+    static async findUserByUserId(userId) {
+        return await db.KYC.findOne({
+            where: {
+                UserId: userId
+            }
+        })
+    }
+    static async deleteKYCUser(id) {
+        return await db.KYC.drop({
+            where: { id }
+        })
+    }
+    static async verifyUser(id) {
+        return await db.KYC.update({
+            isVerified: true
+        }, {
+            where: { id }
         })
     }
 }
