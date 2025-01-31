@@ -1,27 +1,28 @@
 const jwt = require("jsonwebtoken")
+const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } = require("../utils/config")
 
 const authenticate = (Id, response) => {
     const accessToken = jwt.sign(
         { Id },
-        process.env.ACCESS_JWT_SECRET,
+        ACCESS_JWT_SECRET,
         { expiresIn: "10m" }
     )
     const refreshToken = jwt.sign(
         { Id },
-        process.env.REFRESH_JWT_SECRET,
+        REFRESH_JWT_SECRET,
         { expiresIn: "1h" }
     )
     response.cookie("accesstoken", accessToken, {
         httpOnly: true,
         sameSite: "strict",
         maxAge: 10 * 60 * 1000,
-        secure: process.env.NODE_ENV === "production"
+        secure: NODE_ENV === "production"
     })
     response.cookie("refreshtoken", refreshToken, {
         httpOnly: true,
         sameSite: "strict",
         maxAge: 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === "production"
+        secure: NODE_ENV === "production"
     })
     return { accessToken, refreshToken };
 }

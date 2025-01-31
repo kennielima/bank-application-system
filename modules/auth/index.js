@@ -26,6 +26,7 @@ router.post('/verify-login',
 )
 
 router.get('/refresh-token',
+    verifyUser,
     Authcontroller.refreshToken
 )
 
@@ -67,5 +68,4 @@ router.post('/logout',
 
 module.exports = router;
 
-// TODO ADD FLAGS TO MODEL
-// TODO ASSOCIATIONS REFACTOR
+// todo: learn Webhooks

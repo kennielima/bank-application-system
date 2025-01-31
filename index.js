@@ -2,6 +2,7 @@ const server = require('./server')
 
 const db = require('./database/models');
 const logger = require('./utils/logger');
+const { PORT } = require('./utils/config');
 db.sequelize.sync({ alter: true })
     .then(() => {
         logger.info('DATABASE CONNECTED SUCCESSFULLY')
@@ -10,6 +11,6 @@ db.sequelize.sync({ alter: true })
         logger.error('ERRORING CONNECTING TO DATABASE' + error)
     });
 
-server.listen(process.env.PORT, () => {
-    logger.info(`server running on port ${process.env.PORT}`)
+server.listen(PORT, () => {
+    logger.info(`server running on port ${PORT}`)
 })

@@ -1,13 +1,14 @@
 const jwt = require("jsonwebtoken")
 const AuthServices = require("../modules/auth/authService");
 const { createResponse, HttpStatusCode, ResponseStatus } = require('../utils/apiResponses');
+const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } = require("../utils/config");
 
 module.exports = async (req, res, next) => {
     try {
         const token = req.cookies.accesstoken || req.cookies.refreshtoken;
         const JWTSECRET = token === req.cookies.accesstoken
-            ? process.env.ACCESS_JWT_SECRET
-            : process.env.REFRESH_JWT_SECRET;
+            ? ACCESS_JWT_SECRET
+            : REFRESH_JWT_SECRET;
 
         if (!token) {
             const response = {
