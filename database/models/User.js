@@ -63,6 +63,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     },
         {
+            tableName: 'Users',
             timestamps: true,
             indexes: [
                 {
@@ -78,6 +79,15 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'UserId', //user ID IN acc MODEL
             as: 'Accounts',
             sourceKey: 'Id',// userid IN user
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
+        })
+    }
+    User.associate = (models) => {
+        User.hasOne(models.KYC, {
+            foreignKey: 'UserId',
+            as: 'KYC',
+            sourceKey: 'Id',
             onDelete: 'CASCADE',
             onUpdate: 'CASCADE'
         })

@@ -18,5 +18,6 @@ module.exports = {
     SMILE_ID_SIGNATURE: process.env.SMILE_ID_SIGNATURE,
     SMILE_ID_PARTNER_ID: process.env.SMILE_ID_PARTNER_ID,
     SMILE_ID_URL: process.env.SMILE_ID_URL,
-    TZ: process.env.TZ
+    TZ: process.env.TZ,
+    NODE_ENV: process.env.NODE_ENV || "production"
 }

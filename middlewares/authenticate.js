@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } = require("../utils/config")
+const { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET, NODE_ENV } = require("../utils/config")
 
 const authenticate = (Id, response) => {
     const accessToken = jwt.sign(

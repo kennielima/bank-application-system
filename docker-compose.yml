@@ -23,7 +23,7 @@ services:
           ignore: 
            - node_modules/
   db:
-    image: mysql
+    image: ${DIALECT}
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
