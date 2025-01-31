@@ -85,7 +85,6 @@ class KYCController {
             smileId(dataBody, res);
 
             const UserKYC = await KYCService.createKYCUser(user.Id, first_name, last_name, phone_number, dateOfBirth, country, gender, id_type, id_number)
-            console.log(UserKYC);
         }
         catch (error) {
             logger.error('Create KYC error:', error);
@@ -122,7 +121,7 @@ class KYCController {
 
             if (data.ResultCode !== ("1020" || "1021")) {
                 await KYCService.deleteKYCUser(KYCUser.Id);
-                
+
                 const response = {
                     message: "KYC Verification failed"
                 }
