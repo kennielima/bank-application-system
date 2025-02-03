@@ -12,6 +12,7 @@ class KYCService {
             Gender: gender,
             IdType: id_type,
             IdNumber: id_number,
+            VerificationDate: new Date().toISOString()
         })
     }
     static async findUserByUserId(userId) {
@@ -22,7 +23,7 @@ class KYCService {
         })
     }
     static async deleteKYCUser(id) {
-        return await db.KYC.drop({
+        return await db.KYC.destroy({
             where: { id }
         })
     }

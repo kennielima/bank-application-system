@@ -22,8 +22,8 @@ const smileId = (dataBody, res) => {
                 const responseInfo = { message: "KYC Failed" }
                 return createResponse(
                     res,
-                    HttpStatusCode.StatusOk,
-                    ResponseStatus.Success,
+                    HttpStatusCode.StatusBadRequest,
+                    ResponseStatus.Failure,
                     responseInfo
                 )
             }
