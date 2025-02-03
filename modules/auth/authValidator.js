@@ -12,6 +12,7 @@ class authValidator {
                 minNumbers: 1,
             }).withMessage('Password is required'),
             body('PhoneNumber').isNumeric().withMessage('PhoneNumber is required'),
+            body('DateOfBirth').isDate().withMessage('Date of Birth is required'),
         ]
     }
     static validateLoginForm() {

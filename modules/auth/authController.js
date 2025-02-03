@@ -173,7 +173,7 @@ class Authcontroller {
 
             return createResponse(
                 res,
-                HttpStatusCode.StatusCreated,
+                HttpStatusCode.StatusOk,
                 ResponseStatus.Success,
                 response
             )

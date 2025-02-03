@@ -42,7 +42,6 @@ router.post('/verify-otp',
 )
 router.post('/reset-password',
     handleSqlInjection,
-    verifyUser,
     authValidator.validateNewPassword(),
     authValidator.handleValidationErrors,
     Authcontroller.resetPassword
