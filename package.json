@@ -7,7 +7,8 @@
     "start": "nodemon index.js",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "test:log": "vitest --reporter verbose --logHeapUsage --logCalls"
   },
   "keywords": [],
   "author": "",
