@@ -1,3 +1,9 @@
-const AuthRouter = require("./auth/authController")
+const AuthRouter = require("./auth")
+const KycRouter = require("./kyc")
+const AccountRouter = require("./account")
 
-module.exports = AuthRouter;
+module.exports = {
+    AuthRouter,
+    KycRouter,
+    AccountRouter
+};

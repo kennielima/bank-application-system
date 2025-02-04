@@ -1,6 +1,3 @@
-const Card = require("./Card");
-const Transaction = require("./Transaction");
-
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define(
         'Account', {
@@ -10,24 +7,57 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             primaryKey: true
         },
+        FirstName: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        LastName: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        Email: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            unique: true
+        },
+        PhoneNumber: {
+            type: DataTypes.STRING(15),
+            allowNull: false,
+        },
         AccountNumber: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             unique: true
         },
         Balance: {
             type: DataTypes.DECIMAL(10, 3),
-            allowNull: false,
+            allowNull: true,
         },
         AccountType: {
             type: DataTypes.ENUM('savings', 'current'),
             defaultValue: 'savings',
-            allowNull: false,
-        },
-        AccessToken: {
-            type: DataTypes.JSON,
             allowNull: true,
         },
+        CreatedAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        CustomerCode: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        Integration: {
+            type: DataTypes.DECIMAL(15),
+            allowNull: false,
+        },
+        CustomerId: {
+            type: DataTypes.DECIMAL(15),
+            allowNull: false,
+        },
+        // AccessToken: {
+        //     type: DataTypes.JSON,
+        //     allowNull: true,
+        // },
         UserId: {
             type: DataTypes.UUID,
             allowNull: false,
@@ -35,18 +65,6 @@ module.exports = (sequelize, DataTypes) => {
             //     model: 'User',
             //     key: 'Id'
             // }
-        },
-        TransactionId: {
-            type: DataTypes.UUID,
-            allowNull: false
-        },
-        CardId: {
-            type: DataTypes.UUID,
-            allowNull: false
-        },
-        BeneficiaryId: {
-            type: DataTypes.UUID,
-            allowNull: false
         },
     },
         {

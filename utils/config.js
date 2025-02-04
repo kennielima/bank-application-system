@@ -19,5 +19,8 @@ module.exports = {
     SMILE_ID_PARTNER_ID: process.env.SMILE_ID_PARTNER_ID,
     SMILE_ID_URL: process.env.SMILE_ID_URL,
     TZ: process.env.TZ,
-    NODE_ENV: process.env.NODE_ENV || "production"
+    NODE_ENV: process.env.NODE_ENV || "production",
+    PAYSTACK_URL: process.env.PAYSTACK_URL,
+    PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY,
+    PAYSTACK_PORT: process.env.PAYSTACK_PORT
 }

@@ -82,9 +82,36 @@ class KYCController {
                 }
             };
 
-            smileId(dataBody, res);
-
+            // smileId(dataBody, res);
+            const response = axios.post(`${SMILE_ID_URL}`, dataBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            if (!response) {
+                logger.error("KYC Failed")
+                const responseInfo = { message: "KYC Failed" }
+                return createResponse(
+                    res,
+                    HttpStatusCode.StatusBadRequest,
+                    ResponseStatus.Failure,
+                    responseInfo
+                )
+            }
             const UserKYC = await KYCService.createKYCUser(user.Id, first_name, last_name, phone_number, dateOfBirth, country, gender, id_type, id_number)
+            logger.info(UserKYC);
+
+            let responseInfo = {
+                data: response.data,
+                message: "KYC Success"
+            }
+
+            return createResponse(
+                res,
+                HttpStatusCode.StatusOk,
+                ResponseStatus.Success,
+                responseInfo
+            )
         }
         catch (error) {
             logger.error('Create KYC error:', error);
@@ -120,10 +147,12 @@ class KYCController {
             const KYCUser = await KYCService.findUserByUserId(user.Id);
 
             if (data.ResultCode !== ("1020" || "1021")) {
+                logger.info('KYC Verification does not match');
+
                 await KYCService.deleteKYCUser(KYCUser.Id);
 
                 const response = {
-                    message: "KYC Verification failed"
+                    message: "KYC Verification does not match"
                 }
                 return createResponse(
                     res,
