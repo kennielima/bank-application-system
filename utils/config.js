@@ -19,5 +19,7 @@ module.exports = {
     SMILE_ID_PARTNER_ID: process.env.SMILE_ID_PARTNER_ID,
     SMILE_ID_URL: process.env.SMILE_ID_URL,
     TZ: process.env.TZ,
-    NODE_ENV: process.env.NODE_ENV || "production"
+    NODE_ENV: process.env.NODE_ENV || "production",
+    FLUTTERWAVE_SECRET_KEY: process.env.FLUTTER_SECRET_KEY,
+    FLUTTERWAVE_URL: process.env.FLUTTER_URL
 }

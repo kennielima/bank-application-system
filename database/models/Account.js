@@ -1,6 +1,3 @@
-const Card = require("./Card");
-const Transaction = require("./Transaction");
-
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define(
         'Account', {
@@ -13,20 +10,21 @@ module.exports = (sequelize, DataTypes) => {
         AccountNumber: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true
+            unique: false
         },
         Balance: {
             type: DataTypes.DECIMAL(10, 3),
             allowNull: false,
+            defaultValue: 0
         },
         AccountType: {
             type: DataTypes.ENUM('savings', 'current'),
             defaultValue: 'savings',
             allowNull: false,
         },
-        AccessToken: {
-            type: DataTypes.JSON,
-            allowNull: true,
+        AccountStatus: {
+            type: DataTypes.ENUM("active", "inactive"),
+            allowNull: false,
         },
         UserId: {
             type: DataTypes.UUID,
@@ -36,18 +34,14 @@ module.exports = (sequelize, DataTypes) => {
             //     key: 'Id'
             // }
         },
-        TransactionId: {
-            type: DataTypes.UUID,
-            allowNull: false
+        CreatedAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
         },
-        CardId: {
-            type: DataTypes.UUID,
-            allowNull: false
-        },
-        BeneficiaryId: {
-            type: DataTypes.UUID,
-            allowNull: false
-        },
+          ExpiryDate:  {
+            type: DataTypes.DATE,
+            allowNull: false,
+          },
     },
         {
             timestamps: true,
