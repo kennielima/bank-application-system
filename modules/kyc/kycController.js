@@ -27,7 +27,7 @@ const smileId = (dataBody, res) => {
                     responseInfo
                 )
             }
-            let responseInfo = {
+            const responseInfo = {
                 data: response.data,
                 message: "KYC Success"
             }

@@ -15,7 +15,6 @@ module.exports = (sequelize, DataTypes) => {
         Balance: {
             type: DataTypes.DECIMAL(10, 3),
             allowNull: false,
-            defaultValue: 0
         },
         AccountType: {
             type: DataTypes.ENUM('savings', 'current'),

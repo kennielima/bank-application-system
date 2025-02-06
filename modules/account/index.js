@@ -13,6 +13,11 @@ router.post('/get-account',
     handleSqlInjection,
     accountController.fetchAccountDetails
 )
+router.post('/make-transfer',
+    verifyUser,
+    handleSqlInjection,
+    accountController.transfer
+)
 router.get('/get-accounts',
     verifyUser,
     accountController.fetchUserAccounts
