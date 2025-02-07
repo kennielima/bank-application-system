@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
         'Account', {
         Id: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
+            // defaultValue: DataTypes.UUIDV4,
             allowNull: false,
             primaryKey: true
         },
@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
             unique: false
         },
         Bank: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: false
+        },
+        BankCode: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: false
@@ -27,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         AccountStatus: {
-            type: DataTypes.ENUM("active", "inactive"),
+            type: DataTypes.ENUM("ACTIVE", "INACTIVE"),
             allowNull: false,
         },
         UserId: {
@@ -42,10 +47,23 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: false,
         },
-          ExpiryDate:  {
-            type: DataTypes.DATE,
+        Country: {
+            type: DataTypes.STRING,
             allowNull: false,
-          },
+        },
+        AccountName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        Email: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            unique: true
+        },
+        PhoneNumber: {
+            type: DataTypes.STRING(15),
+            allowNull: false,
+        }
     },
         {
             timestamps: true,

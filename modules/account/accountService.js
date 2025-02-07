@@ -1,15 +1,21 @@
+const Bank = require("flutterwave-node-v3/lib/rave.banks");
 const db = require("../../database/models");
 
 class AccountService {
-    static async createAccount(UserId, account_number, account_status, created_at, expiry_date, bank_name, amount) {
+    static async createAccount(UserId, id, account_reference, bank_name, bank_code, account_status, created_at, country, account_name, email, mobilenumber) {
         return await db.Account.create({
             UserId,
-            AccountNumber: account_number,
+            Id: id,
+            AccountNumber: account_reference,
+            Bank: bank_name,
+            BankCode: bank_code,
             AccountStatus: account_status,
             DateCreated: created_at,
-            ExpiryDate: expiry_date,
-            Bank: bank_name,
-            Balance: amount
+            Balance: 0,
+            Country: country,
+            AccountName: account_name,
+            Email: email,
+            PhoneNumber: mobilenumber
         })
     }
     static async fetchUserAccountsFromDB(userId) {

@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { createResponse, HttpStatusCode, ResponseStatus } = require('../../utils/apiResponses');
-const { FLUTTERWAVE_SECRET_KEY, FLUTTERWAVE_URL, FLUTTERWAVE_PUBLIC_KEY, FLUTTERWAVE_TRANSFER_URL } = require('../../utils/config');
+const { FLUTTERWAVE_SECRET_KEY, FLUTTERWAVE_URL, FLUTTERWAVE_PUBLIC_KEY, FLUTTERWAVE_TRANSFER_URL, FLUTTERWAVE_PAYOUT_URL } = require('../../utils/config');
 const logger = require('../../utils/logger');
 const AccountService = require('./accountService');
 const { v4: uuidv4 } = require('uuid');
@@ -8,15 +8,15 @@ const sanitizer = require("sanitizer");
 
 class accountController {
     static async createAccount(req, res) {
-        const { email, bvn } = req.body;
+        const { email, account_name, mobilenumber, country } = req.body;
         try {
             const params = {
                 "email": email,
-                "amount": 1000,
-                "bvn": bvn,
-                "is_permanent": false
+                "account_name": account_name,
+                "mobilenumber": mobilenumber,
+                "country": country
             }
-            const response = await axios.post(`${FLUTTERWAVE_URL}`, params, {
+            const response = await axios.post(`${FLUTTERWAVE_PAYOUT_URL}`, params, {
                 headers: {
                     "Authorization": `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
                     "Content-Type": "application/json"
@@ -33,8 +33,12 @@ class accountController {
                 )
             }
             logger.info(sanitizer.sanitize(response.data))
-            const { account_number, account_status, created_at, expiry_date, bank_name, amount } = response.data.data
-            await AccountService.createAccount(req.user.Id, account_number, account_status, created_at, expiry_date, bank_name, amount)
+
+            const { id, account_reference, bank_name, bank_code, status, created_at } = response.data.data;
+
+            await AccountService.createAccount(req.user.Id, id, account_reference, bank_name, bank_code, status, created_at, country, account_name, email, mobilenumber);
+
+            console.log(response.data.data)
 
             const responseInfo = {
                 data: response.data,
@@ -48,7 +52,7 @@ class accountController {
             )
         }
         catch (error) {
-            logger.error('Failed to create Virtual Account:', error, error.response?.data);
+            logger.error('Failed to create Virtual Account:', error.response?.data);
             const response = {
                 message: "Failed to create Virtual Account:" + error
             }
@@ -82,7 +86,7 @@ class accountController {
             }
             logger.info(sanitizer.sanitize(response.data))
             await AccountService.fetchAccountDetails(req.user.Id, account_number);
-            
+
             const responseInfo = {
                 data: response.data,
                 message: "Fixed Virtual Account Successfully Fetched"
@@ -109,7 +113,7 @@ class accountController {
     }
 
     static async transfer(req, res) {
-        const { account_bank, account_number, amount, narration } = req.body;
+        const { account_bank, account_number, amount, narration, user_account } = req.body;
         try {
             const details = {
                 account_bank: account_bank,
@@ -205,4 +209,4 @@ module.exports = accountController
 
 
 // TODO: Add transactions to db
-
+// fetch which id is making trfr and debit from balance
