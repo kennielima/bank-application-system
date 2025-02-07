@@ -3,7 +3,7 @@ const server = require('./server')
 const db = require('./database/models');
 const logger = require('./utils/logger');
 const { PORT } = require('./utils/config');
-db.sequelize.sync({ alter: true, logging: console.log })
+db.sequelize.sync({ alter: true })
     .then(() => {
         logger.info('DATABASE CONNECTED SUCCESSFULLY')
     })

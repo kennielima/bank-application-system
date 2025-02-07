@@ -5,8 +5,6 @@ const Signature = smileIdentityCore.Signature;
 const axios = require('axios');
 const AuthServices = require('../auth/authService');
 const { SMILE_ID_PARTNER_ID, SMILE_ID_API_KEY, SMILE_ID_URL } = require('../../utils/config');
-const db = require('../../database/models');
-const KYC = require('../../database/models/KYC');
 const KYCService = require('./kycService');
 require('dotenv').config();
 

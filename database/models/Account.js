@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             unique: false
         },
+        Bank: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: false
+        },
         Balance: {
             type: DataTypes.DECIMAL(10, 3),
             allowNull: false,
@@ -33,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
             //     key: 'Id'
             // }
         },
-        CreatedAt: {
+        DateCreated: {
             type: DataTypes.DATE,
             allowNull: false,
         },

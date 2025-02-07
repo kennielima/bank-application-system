@@ -1,13 +1,15 @@
 const db = require("../../database/models");
 
 class AccountService {
-    static async createAccount(UserId, account_number, account_status, created_at, expiry_date, bank_name) {
+    static async createAccount(UserId, account_number, account_status, created_at, expiry_date, bank_name, amount) {
         return await db.Account.create({
             UserId,
             AccountNumber: account_number,
             AccountStatus: account_status,
-            CreatedAt: created_at,
-            ExpiryDate: expiry_date
+            DateCreated: created_at,
+            ExpiryDate: expiry_date,
+            Bank: bank_name,
+            Balance: amount
         })
     }
     static async fetchUserAccountsFromDB(userId) {
