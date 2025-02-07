@@ -11,11 +11,22 @@ class AccountService {
             BankCode: bank_code,
             AccountStatus: account_status,
             DateCreated: created_at,
-            Balance: 0,
             Country: country,
             AccountName: account_name,
             Email: email,
-            PhoneNumber: mobilenumber
+            PhoneNumber: mobilenumber,
+            // Currency: currency
+        })
+    }
+
+    static async updateAccountBalance(balance, currency, account_number) {
+        return await db.Account.update({
+            Balance: balance,
+            Currency: currency
+        }, {
+            where: {
+                AccountNumber: account_number,
+            }
         })
     }
     static async fetchUserAccountsFromDB(userId) {

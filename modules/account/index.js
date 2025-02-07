@@ -8,10 +8,10 @@ router.post('/create-account',
     handleSqlInjection,
     accountController.createAccount
 )
-router.post('/get-account',
+router.post('/fetch-balance',
     verifyUser,
     handleSqlInjection,
-    accountController.fetchAccountDetails
+    accountController.fetchBalance
 )
 router.post('/make-transfer',
     verifyUser,

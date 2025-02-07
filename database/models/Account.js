@@ -1,3 +1,5 @@
+const { toDefaultValue } = require("sequelize/lib/utils")
+
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define(
         'Account', {
@@ -25,6 +27,12 @@ module.exports = (sequelize, DataTypes) => {
         Balance: {
             type: DataTypes.DECIMAL(10, 3),
             allowNull: false,
+            defaultValue: 0
+        },
+        Currency: {
+            type: DataTypes.ENUM("USD", "EUR", "GBP", "NGN"),
+            allowNull: false,
+            defaultValue: "NGN"
         },
         AccountType: {
             type: DataTypes.ENUM('savings', 'current'),
