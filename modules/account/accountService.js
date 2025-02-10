@@ -2,7 +2,7 @@ const Bank = require("flutterwave-node-v3/lib/rave.banks");
 const db = require("../../database/models");
 
 class AccountService {
-    static async createAccount(UserId, id, account_reference, bank_name, bank_code, account_status, created_at, country, account_name, email, mobilenumber) {
+    static async createAccount(UserId, id, account_reference, bank_name, bank_code, account_status, created_at, country, account_name, email, mobilenumber, currency) {
         return await db.Account.create({
             UserId,
             Id: id,
@@ -15,18 +15,26 @@ class AccountService {
             AccountName: account_name,
             Email: email,
             PhoneNumber: mobilenumber,
-            // Currency: currency
+            Currency: currency
         })
     }
 
-    static async updateAccountBalance(balance, currency, account_number) {
+    static async updateAccountBalance(balance, account_number) {
         return await db.Account.update({
             Balance: balance,
-            Currency: currency
         }, {
             where: {
                 AccountNumber: account_number,
             }
+        })
+    }
+
+    static async fetchAccountDetails(userId, account_number) {
+        return await db.Account.findOne({
+            where: {
+                UserId: userId,
+                AccountNumber: account_number
+            },
         })
     }
     static async fetchUserAccountsFromDB(userId) {
@@ -37,14 +45,6 @@ class AccountService {
             order: [
                 ['createdAt', 'DESC'],
             ]
-        })
-    }
-    static async fetchAccountDetails(userId, account_number) {
-        return await db.Account.findOne({
-            where: {
-                UserId: userId,
-                AccountNumber: account_number
-            },
         })
     }
 }

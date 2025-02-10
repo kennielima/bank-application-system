@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: 0
         },
         Currency: {
-            type: DataTypes.ENUM("USD", "EUR", "GBP", "NGN"),
+            type: DataTypes.STRING(3),
             allowNull: false,
             defaultValue: "NGN"
         },
@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         Country: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(2),
             allowNull: false,
         },
         AccountName: {
@@ -66,7 +66,6 @@ module.exports = (sequelize, DataTypes) => {
         Email: {
             type: DataTypes.STRING(50),
             allowNull: false,
-            unique: true
         },
         PhoneNumber: {
             type: DataTypes.STRING(15),
