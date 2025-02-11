@@ -24,11 +24,6 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             unique: false
         },
-        Balance: {
-            type: DataTypes.DECIMAL(10, 3),
-            allowNull: false,
-            defaultValue: 0
-        },
         Currency: {
             type: DataTypes.STRING(3),
             allowNull: false,

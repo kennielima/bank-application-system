@@ -91,9 +91,6 @@ class accountController {
 
             const Account = await AccountService.fetchAccountDetails(req.user.Id, account_number)
 
-            if (available_balance !== Account.Balance) {
-                await AccountService.updateAccountBalance(available_balance, account_number);
-            }
             const responseInfo = {
                 data: response.data,
                 message: "Fixed Virtual Account Successfully Fetched"
@@ -217,4 +214,3 @@ module.exports = accountController
 
 
 // TODO: Add transactions to db
-// fetch which id is making trfr and debit from balance
