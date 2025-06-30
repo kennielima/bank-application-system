@@ -1,4 +1,3 @@
-const db = require('../../database/models');
 const { authenticate, deauthenticate } = require('../../middlewares/authenticate');
 const bcrypt = require("bcryptjs");
 const parser = require("ua-parser-js");
@@ -8,7 +7,6 @@ const { generateOTP } = require('../../utils/helpers');
 const AuthServices = require('./authService');
 const logger = require('../../utils/logger');
 const sanitizer = require("sanitizer");
-const jwt = require('jsonwebtoken');
 
 class Authcontroller {
     static async signup(req, res) {

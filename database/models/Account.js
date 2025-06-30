@@ -1,32 +1,42 @@
-const Card = require("./Card");
-const Transaction = require("./Transaction");
+const { toDefaultValue } = require("sequelize/lib/utils")
 
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define(
         'Account', {
         Id: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
+            // defaultValue: DataTypes.UUIDV4,
             allowNull: false,
             primaryKey: true
         },
         AccountNumber: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true
+            unique: false
         },
-        Balance: {
-            type: DataTypes.DECIMAL(10, 3),
+        Bank: {
+            type: DataTypes.STRING,
             allowNull: false,
+            unique: false
+        },
+        BankCode: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: false
+        },
+        Currency: {
+            type: DataTypes.STRING(3),
+            allowNull: false,
+            defaultValue: "NGN"
         },
         AccountType: {
             type: DataTypes.ENUM('savings', 'current'),
             defaultValue: 'savings',
             allowNull: false,
         },
-        AccessToken: {
-            type: DataTypes.JSON,
-            allowNull: true,
+        AccountStatus: {
+            type: DataTypes.ENUM("ACTIVE", "INACTIVE"),
+            allowNull: false,
         },
         UserId: {
             type: DataTypes.UUID,
@@ -36,18 +46,26 @@ module.exports = (sequelize, DataTypes) => {
             //     key: 'Id'
             // }
         },
-        TransactionId: {
-            type: DataTypes.UUID,
-            allowNull: false
+        DateCreated: {
+            type: DataTypes.DATE,
+            allowNull: false,
         },
-        CardId: {
-            type: DataTypes.UUID,
-            allowNull: false
+        Country: {
+            type: DataTypes.STRING(2),
+            allowNull: false,
         },
-        BeneficiaryId: {
-            type: DataTypes.UUID,
-            allowNull: false
+        AccountName: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
+        Email: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
+        PhoneNumber: {
+            type: DataTypes.STRING(15),
+            allowNull: false,
+        }
     },
         {
             timestamps: true,

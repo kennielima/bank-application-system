@@ -66,5 +66,3 @@ router.post('/logout',
 
 
 module.exports = router;
-
-// todo: learn Webhooks
