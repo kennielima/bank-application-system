@@ -62,6 +62,7 @@ class accountController {
             )
         }
     }
+
     static async fetchBalance(req, res) {
         const { account_number, currency } = req.body;
         try {
@@ -85,11 +86,7 @@ class accountController {
                     responseInfo
                 )
             }
-            logger.info(sanitizer.sanitize(response.data))
-
             const { available_balance } = response.data.data;
-
-            const Account = await AccountService.fetchAccountDetails(req.user.Id, account_number)
 
             const responseInfo = {
                 data: response.data,

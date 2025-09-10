@@ -81,8 +81,18 @@ class KYCController {
             };
 
             smileId(dataBody, res);
-
             const UserKYC = await KYCService.createKYCUser(user.Id, first_name, last_name, phone_number, dateOfBirth, country, gender, id_type, id_number)
+
+            let responseInfo = {
+                data: UserKYC,
+                message: "KYC Verification in Progress"
+            };
+            return createResponse(
+                res,
+                HttpStatusCode.StatusOk,
+                ResponseStatus.Success,
+                responseInfo
+            )
         }
         catch (error) {
             logger.error('Create KYC error:', error);
