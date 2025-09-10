@@ -34,5 +34,5 @@ npm run test
 👤 **kennielima**
 
 * Website: kennylima.vercel.app
-* Github: [@https://github.com/kennielima](https://github.com/https:/github.com/kennielima)
+* Github: [https://github.com/kennielima]
 
