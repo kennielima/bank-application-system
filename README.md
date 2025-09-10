@@ -11,11 +11,6 @@
 
 > A Bank API where users will be able to create accounts, make transactions and pay bills
 
-## API Documentation
-<a href="https://tee-api-v1-2.postman.co/workspace/My-Workspace~535b0db1-9c3
-4-4c12-851e-cb95ea417220/collection/28576170-6a705c79-b836-46c7-84cf-e2c1f1df6063?action=share&source=copy-link&creator=28576
-170">POSTMAN COLLECTION</a>
-
 ## Install
 
 ```sh
