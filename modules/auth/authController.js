@@ -367,7 +367,7 @@ class Authcontroller {
         }
     }
 
-    static logout(res) {
+    static logout(req, res) {
         try {
             deauthenticate(res)
             const response = {
